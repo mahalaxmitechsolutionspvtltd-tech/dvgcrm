@@ -1,6 +1,5 @@
-
 import { Button } from "../ui/button";
-import { ChevronDown, CirclePlus, Plus } from "lucide-react";
+import { Asterisk, ChevronDown, CirclePlus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem, SelectLabel } from "../ui/select";
@@ -12,6 +11,10 @@ import type { Lead } from "../../lib/types";
 import type { FollowUp } from "../../lib/types";
 import { addLeadHandler } from "../../apiHandlers/LeadHandler";
 import { Separator } from "../ui/separator";
+import { FieldLabel } from "../ui/field";
+import { Badge } from "../ui/badge";
+import { Spinner } from "../ui/spinner";
+
 
 
 
@@ -57,8 +60,6 @@ const requirement = [
 ];
 
 
-
-
 interface childProps {
     onSuccess: (isSuccess: boolean) => void;
 }
@@ -67,12 +68,22 @@ const form: Partial<Lead> = {
     problem_statement: "",
     company_name: "",
     company_type: "",
-    contact1_name: "",
-    contact2_name: "",
-    contact3_name: "",
-    email: "",
+    primary_person_name: "",        //this is required
+    primary_person_contact: "",      //this is required
+    primary_person_email: "",       //this is required
+
+    secondary_person_name: "",
+    secondary_person_contact: "",
+    secondary_person_email: "",
+
+    tertiary_person_name: "",
+    tertiary_person_contact: "",
+    tertiary_person_email: "",
+
     follow_ups: [],
+    expenses: "",
     gst_no: "",
+    pan_number: "",
     address_line1: "",
     nature_of_business: "",
     remarks: "",
@@ -82,17 +93,20 @@ const form: Partial<Lead> = {
 
 
 export default function AddLeads({ onSuccess }: childProps) {
+
+
     const [formdata, setFormData] = useState<Partial<Lead>>(form);
     const [isNewValue, setNewValue] = useState(false);
     const [isDeal, setDeal] = useState(false);
     const [errors, setFormErrors] = useState<Lead>();
-
+    const [open, setOpen] = useState(false);
+    const [loader, setLoader] = useState(false);
 
 
     const handleInputChange: ChangeEventHandler<HTMLInputElement> | undefined = (e: any) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
-            ...prev, [name]: value
+            ...prev, [name]: ['pan_number', 'gst_no'].includes(name) ? value.toUpperCase() : value
         }))
 
     }
@@ -112,11 +126,12 @@ export default function AddLeads({ onSuccess }: childProps) {
     }
 
     const handleFollowUpAdd = () => {
-        autoSaveForm(true)
+
         const newFollowUp: FollowUp = {
             id: Math.random().toString(36).substr(2, 9),
             date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
             note: '',
+            'expenses': '',
             completed: false,
             timestamp: Date.now()
         };
@@ -135,41 +150,43 @@ export default function AddLeads({ onSuccess }: childProps) {
         }));
     };
 
-    const autoSaveForm = async (e: any) => {
-        if (!e) {
-            const data = await addLeadHandler(formdata);
-            console.error(data.data.response);
-
-            if (data?.data.success) {
-                onSuccess(true);
-                setFormData(form);
-            } else {
-                setFormErrors(data.data);
-                console.log(data.data);
-            }
-
+    const handleSubmit = async () => {
+        setLoader(true);
+        const response = await addLeadHandler(formdata);
+        console.log(response?.data.errors);
+        if (response?.data?.success) {
+            onSuccess(true);
+            setFormData(form);
+            setOpen(false)
+            setLoader(false);
+        }
+        else {
+            setFormErrors(response?.data.errors)
         }
     }
+
 
     return (
 
         <div className=" overflow-auto overflow-y-auto">
-            <Dialog onOpenChange={(e) => autoSaveForm(e)}>
+            <Dialog open={open}>
                 <DialogTrigger asChild>
-                    <Button className=" bg-blue-600 hover:bg-blue-700" variant={"default"}>
+                    <Button
+                        onClick={() => setOpen(true)}
+                        className=" bg-blue-600 hover:bg-blue-700" variant={"default"}>
                         <CirclePlus />Leads
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="p-5 lg:max-w-7xl border bg-white border-gray-400 max-h-[90vh] overflow-y-auto  hide-scrollbar">
+                <DialogContent className=" lg:max-w-7xl border bg-white border-gray-400 max-h-[95vh] overflow-y-auto  hide-scrollbar">
 
                     <DialogHeader>
                         <DialogTitle className="text-center">Add Leads</DialogTitle>
                     </DialogHeader>
-                    <hr className="text-gray-300 " />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-12 2xl:grid-cols-12 gap-5 overflow-y-auto h-xl mt-2">
 
-                        <div className="col-span-8 grid gap-5">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 xl:grid-cols-12 2xl:grid-cols-12 gap-5 overflow-y-auto h-xl ">
+
+                        <div className="col-span-8 grid gap-1">
                             {/* company section */}
                             <section className="border border-gray-300 rounded-sm">
                                 <div className="bg-gray-100 text-center  py-2">
@@ -177,19 +194,22 @@ export default function AddLeads({ onSuccess }: childProps) {
                                 </div>
                                 <div className="p-3">
                                     <div className="my-3">
-                                        <label className="text-sm" htmlFor="cname">Company name</label>
+
+                                        <FieldLabel className="text-sm">Company name <Asterisk className="-mx-1.5 w-3 h-3 text-red-500" /></FieldLabel>
                                         <Input
                                             name="company_name"
                                             onChange={(e) => handleInputChange(e)}
-                                            placeholder={errors ? errors?.company_name![0] : "company name.."}
-                                            className={` ${errors?.company_name![0] ? "border border-red-600" : ""}`}
-                                            required />
+                                            placeholder={errors?.company_name ? errors.company_name![0] : "company name.."}
+                                            className={`${errors?.company_name ? "border-2 border-red-600 text-red-600" : ""}`}
+                                            required
+                                        />
                                     </div>
 
                                     <div className="grid grid-col-1 lg:grid-cols-2 xl:grid-cols-2 gap-2">
                                         {/* company type */}
                                         <div>
-                                            <label className="text-sm" htmlFor="">Company type</label>
+
+                                            <FieldLabel className="text-sm">Company type</FieldLabel>
                                             <Select
 
                                                 onValueChange={(value) => handleSelectChange("company_type", value)}
@@ -214,8 +234,8 @@ export default function AddLeads({ onSuccess }: childProps) {
                                         </div>
                                         {/* company nature */}
                                         <div>
-                                            <label className="text-sm" htmlFor="">Nature of Business</label>
 
+                                            <FieldLabel className="text-sm">Nature of Business</FieldLabel>
                                             {!isNewValue ? (
                                                 <Select
 
@@ -265,13 +285,31 @@ export default function AddLeads({ onSuccess }: childProps) {
                                         </div>
                                     </div>
 
-                                    {/* GST number */}
-                                    <div className="my-3">
-                                        <label className="text-sm" htmlFor="gstno">GST Number(optional)</label>
-                                        <Input
-                                            name="gst_no"
-                                            onChange={(e) => handleInputChange(e)}
-                                            placeholder="Gst number.." />
+                                    {/* GST number & Pan car */}
+                                    <div className="grid grid-col-1 lg:grid-cols-2 xl:grid-cols-2 gap-2">
+                                        <div className="my-3">
+                                            <label htmlFor="gstno"></label>
+                                            <FieldLabel className="text-sm">GST Number</FieldLabel>
+                                            <Input
+                                                className=" uppercase text-blue-700 font-semibold"
+                                                max={15}
+                                                name="gst_no"
+                                                onChange={(e) => handleInputChange(e)}
+                                                placeholder="eg.27AAAAP0267H2ZN" />
+                                        </div>
+                                        <div className="my-3">
+
+                                            <FieldLabel>PAN number<Asterisk className="-mx-1.5 w-3 h-3 text-red-500" /></FieldLabel>
+                                            <Input
+
+                                                required
+                                                name={"pan_number"}
+                                                max={10}
+                                                onChange={(e) => handleInputChange(e)}
+                                                placeholder={errors?.pan_number ? errors.pan_number![0] : "eg.ABCDE0123F"}
+                                                className={`${errors?.pan_number ? "border-2 border-red-600 text-red-600" : ""}  uppercase text-blue-700 font-semibold`}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -284,51 +322,119 @@ export default function AddLeads({ onSuccess }: childProps) {
                                 </div>
 
                                 {/*person contacts */}
-                                <div className="p-3 grid gap-3">
-                                    <div>
-                                        <label className="text-sm" htmlFor="gstno">Primary Contact 1</label>
-                                        <Input
-                                            name="contact1_name"
-                                            onChange={(e) => handleInputChange(e)}
-                                            required
+                                <div className="p-3 grid gap-4 ">
 
-                                            placeholder={errors ? errors?.contact1_name![0] : "Name and contact.."}
-                                            className={` ${errors?.contact1_name![0] ? "border border-red-600" : ""}`}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-2">
-                                        <div >
-                                            <label className="text-sm" htmlFor="gstno">Secondary Contact </label>
+                                    {/* primary person */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <FieldLabel className="text-sm">Primary Contact Name <Asterisk className="-mx-1.5 w-3 h-3 text-red-500" /></FieldLabel>
                                             <Input
-                                                name="contact2_name"
+                                                type="text"
+                                                name="primary_person_name"
+                                                onChange={(e) => handleInputChange(e)}
+                                                required
+                                                placeholder={errors?.primary_person_name ? errors.primary_person_name![0] : "Full name"}
+                                                className={` ${errors?.primary_person_name![0] ? "border-2 border-red-600 text-red-600" : ""}`}
+                                            />
+                                        </div>
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Primary Contact number <Asterisk className="-mx-1.5 w-3 h-3 text-red-500" /></FieldLabel>
+                                            <Input
+                                                type="tel"
+                                                name="primary_person_contact"
+                                                onChange={(e) => handleInputChange(e)}
+                                                required
+                                                placeholder={errors?.primary_person_contact ? errors.primary_person_contact![0] : "eg.98473xxxx"}
+                                                className={` ${errors?.primary_person_contact![0] ? "border border-red-600 text-red-600" : ""}`}
+                                            />
+                                        </div>
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Primary contact email <Asterisk className="-mx-1.5 w-3 h-3 text-red-500" /></FieldLabel>
+                                            <Input
+                                                type="email"
+                                                name="primary_person_email"
+                                                onChange={(e) => handleInputChange(e)}
+                                                required
+                                                placeholder={errors?.primary_person_email ? errors.primary_person_email![0] : "email"}
+                                                className={` ${errors?.primary_person_email![0] ? "border border-red-600 text-red-600" : ""}`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* secondary person */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Secondary Contact Name </FieldLabel>
+                                            <Input
+                                                type="text"
+                                                name="secondary_person_name"
+                                                onChange={(e) => handleInputChange(e)}
+                                                placeholder={"Full name"}
+
+                                            />
+                                        </div>
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Secondary Contact number </FieldLabel>
+                                            <Input
+                                                type="tel"
+                                                name="secondary_person_contact"
+                                                onChange={(e) => handleInputChange(e)}
+                                                placeholder={"number"}
+
+                                            />
+                                        </div>
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Secondary contact email </FieldLabel>
+                                            <Input
+                                                type="email"
+                                                name="secondary_person_email"
                                                 onChange={(e) => handleInputChange(e)}
 
-                                                placeholder="Name and contact." />
+                                                placeholder={"email"}
+                                            />
                                         </div>
-                                        <div >
-                                            <label className="text-sm" htmlFor="gstno">Tertiary Contact </label>
+                                    </div>
+
+                                    {/* Teritiary person */}
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Tertiary Contact Name </FieldLabel>
                                             <Input
-                                                name="contact3_name"
+                                                type="text"
+                                                name="tertiary_person_name"
                                                 onChange={(e) => handleInputChange(e)}
+                                                placeholder={"Full name"}
+                                            />
+                                        </div>
+                                        <div>
 
-                                                placeholder="Name and contact." />
+                                            <FieldLabel className="text-sm">Tertiary Contact number</FieldLabel>
+                                            <Input
+                                                type="tel"
+                                                name="tertiary_person_contact"
+                                                onChange={(e) => handleInputChange(e)}
+                                                placeholder={"number"}
+                                            />
+                                        </div>
+                                        <div>
+
+                                            <FieldLabel className="text-sm">Tertiary contact email </FieldLabel>
+                                            <Input
+                                                type="email"
+                                                name="tertiary_person_email"
+                                                onChange={(e) => handleInputChange(e)}
+                                                placeholder={"email"}
+
+                                            />
                                         </div>
                                     </div>
-                                    {/* email */}
-                                    <div>
-                                        <label className="text-sm" htmlFor="gstno">Email</label>
-                                        <Input
-                                            name="email"
-                                            onChange={(e) => handleInputChange(e)}
-                                            required
-
-                                            placeholder={errors ? errors?.email![0] : "sample@gmail.com.."}
-                                            className={` ${errors?.email![0] ? "border border-red-600" : ""}`}
-                                        />
-                                    </div>
-
                                 </div>
-
                             </section>
 
                             {/* Location */}
@@ -341,7 +447,8 @@ export default function AddLeads({ onSuccess }: childProps) {
                                 {/*person contacts */}
                                 <div className="p-3 grid gap-3">
                                     <div>
-                                        <label className="text-sm" htmlFor="location">Location</label>
+
+                                        <FieldLabel className="text-sm">Location</FieldLabel>
                                         <Input
                                             name="address_line1"
                                             onChange={(e) => handleInputChange(e)}
@@ -350,12 +457,11 @@ export default function AddLeads({ onSuccess }: childProps) {
                                 </div>
 
                             </section>
-
                         </div>
 
                         {/* second column */}
 
-                        <div className="col-span-4 grid gap-5">
+                        <div className="col-span-4 grid gap-1">
                             {/* Status */}
                             <section className="border border-gray-300 rounded-sm">
                                 <div className="bg-gray-100 text-center py-2">
@@ -365,8 +471,8 @@ export default function AddLeads({ onSuccess }: childProps) {
                                 {/*Status */}
                                 <div className="p-3 grid gap-3">
                                     <div>
-                                        <label className="text-sm" htmlFor="status">Status</label>
 
+                                        <FieldLabel className="text-sm">Status</FieldLabel>
                                         <Select
                                             name="status"
                                             onValueChange={(value) => { value == "Quatation sent" ? setDeal(true) : setDeal(false), handleSelectChange("status", value) }}
@@ -393,15 +499,16 @@ export default function AddLeads({ onSuccess }: childProps) {
                                         <div className="p-3 grid gap-3">
                                             <Separator />
                                             <div>
-                                                <label className="text-sm">Deal </label>
 
+                                                <FieldLabel className="text-sm">Deal</FieldLabel>
                                                 <section className="flex gap-2">
                                                     <div>
-                                                        <label className="text-sm" htmlFor="bussiess value">Bussiness value</label>
+                                                        <FieldLabel className="text-sm">Bussiness value</FieldLabel>
                                                         <Input onChange={handleInputChange} name="quotationAmount" id="bussiess value" placeholder="₹" type="number" className="" />
                                                     </div>
                                                     <div>
-                                                        <label className="text-sm" htmlFor="bussiess value">Steps</label>
+
+                                                        <FieldLabel className="text-sm">Steps</FieldLabel>
                                                         <Select
                                                             name="status"
                                                             onValueChange={(value) => handleSelectChange("quotationType", value)}
@@ -428,26 +535,28 @@ export default function AddLeads({ onSuccess }: childProps) {
                             </section>
 
                             {/* Requirements */}
-                            <section className="border border-gray-300 rounded-sm grid ">
+                            <section className="border border-gray-300 rounded-sm  ">
                                 <div className="bg-gray-100 text-center py-2">
                                     <h3 className="text-gray-900 font-medium">Requirements</h3>
                                 </div>
 
-                                <div className="p-3 grid gap-5">
+                                <div className="p-3 grid gap-1">
 
                                     {/*Requirements */}
                                     <div className="">
-                                        <label className="text-sm" htmlFor="">Required Services</label>
+
+                                        <FieldLabel className="text-sm">Required Services</FieldLabel>
                                         <MultiSelect
+
                                             onValuesChange={(e) => setFormData((prev) => ({
                                                 ...prev,
                                                 service_requirements: e
                                             }))}>
                                             <MultiSelectTrigger
-                                                className="w-full max-h-20 overflow-y-auto"
+                                                className="w-full max-h-20 "
                                             >
                                                 <MultiSelectValue
-                                                    className="flex flex-wrap gap-2"
+                                                    className="max-h-20 grid grid-cols-1 overflow-y-scroll custom-scrollbar py-1"
                                                     placeholder="Select services..."
                                                 />
                                             </MultiSelectTrigger>
@@ -466,18 +575,21 @@ export default function AddLeads({ onSuccess }: childProps) {
 
                                             </MultiSelectContent>
                                         </MultiSelect>
+
                                     </div>
 
                                     {/* problem statument  */}
                                     <div className="col-span-full ">
-                                        <label className="text-sm" htmlFor="gstno">Client's porblem statment</label>
+
+                                        <FieldLabel className="text-sm">Client's porblem statment</FieldLabel>
                                         <Textarea
                                             onChange={(e) => handleTextArea("problem_statement", e.target.value)}
                                             placeholder="porblem statment.." />
                                     </div>
 
                                     <div className="col-span-full">
-                                        <label className="text-sm" htmlFor="gstno">Remark</label>
+
+                                        <FieldLabel className="text-sm">Remark</FieldLabel>
                                         <Textarea
                                             name="remarks"
                                             onChange={(e) => handleTextArea("remark", e.target.value)}
@@ -488,70 +600,82 @@ export default function AddLeads({ onSuccess }: childProps) {
                             </section>
 
                             {/* Follow up's */}
-                            <section className="border border-gray-300 rounded-sm">
-                                <div className="bg-gray-100 text-center py-2">
-                                    <h3 className="text-gray-900 font-medium">Follow up's</h3>
-                                </div>
+                            <section className="border p-3 border-gray-300 rounded-sm">
+                                <div className="bg-amber-200">
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button className="w-full">
+                                                <Plus />Add Follow up's
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="border border-gray-300 rounded-sm lg:max-w-lg h-3/4 ">
+                                            <DialogHeader>
+                                                <DialogTitle>Follow up</DialogTitle>
+                                            </DialogHeader>
+                                            <div>
+                                                <div className="max-h-[95%] overflow-y-auto pr-1 custom-scrollbar">
+                                                    {
+                                                        formdata.follow_ups?.length === 0 ? (
+                                                            <div>
+                                                                <h4 className="text-gray-400 text-center">No follow up......</h4>
+                                                            </div>
+                                                        ) : (
 
-                                {/*Status */}
-                                <div className="p-3 grid gap-3">
-                                    <div>
-                                        <Button
-                                            onClick={handleFollowUpAdd}
-                                            variant={"outline"} className="w-full"
-                                        >
-                                            <Plus />Add Follow up's
-                                        </Button>
-                                    </div>
-                                    <div>
-                                        {
-                                            formdata.follow_ups?.length === 0 ? (
-                                                <div>
-                                                    <h4 className="text-gray-400 text-center">No follow up......</h4>
+                                                            formdata.follow_ups?.map((item, index) => (
+                                                                <div key={index} className="">
+                                                                    <div className="mt-2 border border-gray-200 rounded-sm relative">
+                                                                        <Badge className="w-4 h-4 text-sm bg-gray-400 absolute right-10 top-2" variant={"default"}>{index + 1}</Badge>
+                                                                        <Input
+                                                                            value={item.date}
+                                                                            type="date"
+                                                                            name="date"
+                                                                            onChange={(e) => updateFollowUp(item.id, 'date', e.target.value)}
+                                                                            className="rounded-none border-none  focus-visible:ring-0 "
+
+                                                                        />
+                                                                        <Textarea
+                                                                            cols={2}
+                                                                            value={item.note}
+                                                                            onChange={(e) => updateFollowUp(item.id, 'note', e.target.value)}
+                                                                            placeholder="Add your query.."
+                                                                            className="border-none  focus-visible:ring-0 "
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                        )
+                                                    }
                                                 </div>
-                                            ) : (
+                                            </div>
 
-                                                formdata.follow_ups?.map((item, index) => (
-                                                    <div key={index} className="">
-                                                        <div className="mt-2">
-                                                            <Input
-                                                                value={item.date}
-                                                                type="date"
-                                                                name="date"
-                                                                onChange={(e) => updateFollowUp(item.id, 'date', e.target.value)}
-                                                                className="border-b-0 rounded-b-none w-1/2"
-                                                            />
-                                                            <Textarea
-                                                                cols={2}
-                                                                value={item.note}
-                                                                onChange={(e) => updateFollowUp(item.id, 'note', e.target.value)}
-                                                                placeholder="Add your query.."
-                                                                className="border-t-0 rounded-tl-none focus:border-0"
+                                            <div className="w-full absolute bottom-0 p-3 bg-white">
 
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))
+                                                <Button onClick={handleFollowUpAdd} variant={"outline"} className=" hover:bg-blue-400 w-full rounded-sm">
+                                                    <Plus />Add Follow
+                                                </Button>
 
-                                            )
-                                        }
-                                    </div>
+
+                                            </div>
+
+                                        </DialogContent>
+                                    </Dialog>
+
 
                                 </div>
-
                             </section>
-
                         </div>
-
                     </div>
-                    <DialogFooter className=" mt-5">
+                    <DialogFooter className="">
                         <DialogClose asChild>
-                            <Button variant={"default"}>Add</Button>
+                            <Button onClick={() => setOpen(false)} variant={"outline"}>Cancel</Button>
                         </DialogClose>
+                        <Button onClick={handleSubmit} variant={"default"}>
+                            {
+                                loader ? <Spinner /> : "Generate Lead"
+                            }
+
+                        </Button>
                     </DialogFooter>
-
-
-
                 </DialogContent >
             </Dialog >
 

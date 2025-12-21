@@ -12,7 +12,7 @@ import {
     useReactTable,
     type VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, CopyIcon, Delete, Eye, MoreHorizontal } from "lucide-react"
+import { ArrowLeftRight, ArrowUpDown, ChevronDown, Copy, Delete, Eye, Handshake, MoreHorizontal } from "lucide-react"
 
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
@@ -36,18 +36,27 @@ import {
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu"
 import { formateDate } from "../../lib/formateDate"
 import ViewLeads from "./ViewLeads"
-import { Badge } from "../ui/badge"
+
 import EditLead from "./EditLead"
 import type { Lead } from "../../lib/types"
-import { getLeadsHandler } from "../../apiHandlers/LeadHandler"
+import { convertDeal, getLeadsHandler } from "../../apiHandlers/LeadHandler"
 import ShowFollowup from "../showFollowup"
 import { Skeleton } from "../ui/skeleton"
-import { Popover, PopoverTrigger } from "../ui/popover"
-import { PopoverContent } from "@radix-ui/react-popover"
-import { Separator } from "../ui/separator"
+
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
+import { Spinner } from "../ui/spinner"
+import { toast, Toaster } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 
-export function LeadsTable() {
+
+interface childProps {
+    refreshKey: boolean;
+}
+
+
+export function LeadsTable({ refreshKey }: childProps) {
 
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -55,7 +64,9 @@ export function LeadsTable() {
     const [rowSelection, setRowSelection] = React.useState({});
     const [data, setData] = React.useState<Lead[]>([]);
     const [loader, setLoader] = React.useState<boolean>(false);
+    const [open, setOpen] = React.useState<boolean>(false);
 
+    const navigate = useNavigate();
 
 
     const columns: ColumnDef<Lead>[] = [
@@ -82,13 +93,13 @@ export function LeadsTable() {
             enableSorting: false,
             enableHiding: false,
         },
-        {
-            accessorKey: "sr_no",
-            header: "SrNo",
-            cell: ({ row }) => (
-                <div>{row.getValue("sr_no")}</div>
-            )
-        },
+        // {
+        //     accessorKey: "sr_no",
+        //     header: "SrNo",
+        //     cell: ({ row }) => (
+        //         <div>{row.getValue("sr_no")}</div>
+        //     )
+        // },
         {
             accessorKey: "date",
             header: ({ column }) => {
@@ -122,53 +133,54 @@ export function LeadsTable() {
                 <div className=" capitalize">{row.getValue("company_type")}</div>
             )
         },
-        {
+        // {
 
-            accessorKey: "nature_of_business",
-            header: "Nature of Business",
+        //     accessorKey: "nature_of_business",
+        //     header: "Nature of Business",
 
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("nature_of_business")}</div>
-            )
-        },
+        //     cell: ({ row }) => (
+        //         <div className=" capitalize">{row.getValue("nature_of_business")}</div>
+        //     )
+        // },
+        // {
+        //     accessorKey: "gst_no",
+        //     header: "Gst No",
+        //     enableHiding: true,
+        //     cell: ({ row }) => (
+        //         <div className=" capitalize">{row.getValue("gst_no")}</div>
+        //     )
+        // },
         {
-            accessorKey: "gst_no",
-            header: "Gst No",
-            enableHiding: true,
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("gst_no")}</div>
-            )
+            id: "primary_person_email",
+            accessorKey: "primary_person_name",
+            header: "Contact 1",
+            cell: ({ row }) => {
+                const info = row.original;
+                return (
+                    <div className=" capitalize leading-4">
+                        <p>  {info.primary_person_name}</p>
+                        <small className="text-gray-900 font-semibold lowercase">{info.primary_person_email}</small>
+                    </div>
+                )
+            }
         },
-        {
-            accessorKey: "contact1_name",
-            header: "Person 1",
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("contact1_name")}</div>
-            )
-        },
-        {
-            accessorKey: "contact2_name",
-            header: "Person 2",
-            enableHiding: true,
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("contact2_name")}</div>
-            )
-        },
-        {
-            accessorKey: "contact3_name",
-            header: "Person 3",
-            enableHiding: true,
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("contact3_name")}</div>
-            )
-        },
-        {
-            accessorKey: "email",
-            header: "Email",
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("email")}</div>
-            )
-        },
+        // {
+        //     accessorKey: "secondary_person_name",
+        //     header: "Contact 2",
+        //     enableHiding: true,
+        //     cell: ({ row }) => (
+        //         <div className=" capitalize">{row.getValue("contact2_name")}</div>
+        //     )
+        // },
+        // {
+        //     accessorKey: "tertiary_person_contact",
+        //     header: "Contact 3",
+        //     enableHiding: true,
+        //     cell: ({ row }) => (
+        //         <div className=" capitalize">{row.getValue("tertiary_person_contact")}</div>
+        //     )
+        // },
+
         {
             accessorKey: "address_line1",
             header: "Location",
@@ -181,9 +193,9 @@ export function LeadsTable() {
             header: "Services",
             cell: ({ row }) => (
                 <div className=" capitalize">
-                    <Popover >
+                    {/* <Popover >
                         <PopoverTrigger asChild>
-                            <Button variant="outline">
+                            <Button variant="outline" className="h-7 rounded-sm " >
                                 <Eye />
                             </Button>
                         </PopoverTrigger>
@@ -202,47 +214,62 @@ export function LeadsTable() {
                             </div>
                         </PopoverContent>
 
-                    </Popover>
+                    </Popover> */}
+                    <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" className="h-7 rounded-sm " >
+                                <Eye />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className=" rounded-sm leading-5">
+                            {
+                                row.original.service_requirements?.map((item, index) => (
+                                    <p key={index} className="block"><span>{index + 1}</span>. {item}</p>
+                                ))
+                            }
+                        </TooltipContent>
+                    </Tooltip>
                     {/* {row.getValue("service_requirements")} */}
                 </div>
             )
         },
-        {
-            accessorKey: "problem_statement",
-            header: "Problems",
-            enableHiding: true,
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("problem_statement")}</div>
-            )
-        },
-        {
+        // {
+        //     accessorKey: "problem_statement",
+        //     header: "Problems",
+        //     enableHiding: true,
+        //     cell: ({ row }) => (
+        //         <div className=" capitalize">{row.getValue("problem_statement")}</div>
+        //     )
+        // },
+        // {
 
-            accessorKey: "remarks",
-            header: "Remarks",
-            enableHiding: true,
-            cell: ({ row }) => (
-                <div className=" capitalize">{row.getValue("remarks")}</div>
-            )
-        },
+        //     accessorKey: "remarks",
+        //     header: "Remarks",
+        //     enableHiding: true,
+        //     cell: ({ row }) => (
+        //         <div className=" capitalize">{row.getValue("remarks")}</div>
+        //     )
+        // },
         {
             accessorKey: "status",
             header: "Status",
             cell: ({ row }) => {
                 const Status = row.getValue("status");
                 if (Status === "Cold") {
-                    // return <div className=" capitalize">Status</div>
-                    return <Badge variant={"secondary"} className="px-5 rounded-sm  bg-blue-400 text-white">{Status}</Badge>
+
+                    return <p className=" font-medium  text-blue-800 ">{Status}</p>
+
                 }
                 if (Status === "Hot") {
-                    return <Badge variant={"secondary"} className="px-5 rounded-sm bg-red-400 text-white">{Status}</Badge>
+                    return <p className=" font-medium  text-red-800 ">{Status}</p>
 
                 }
                 if (Status === "Warm") {
-                    return <Badge variant={"secondary"} className="px-5 rounded-sm bg-orange-400 text-white">{Status}</Badge>
+                    return <p className=" font-medium  text-orange-500 ">{Status}</p>
 
                 }
-                if (Status === "Quotation sent") {
-                    return <Badge variant={"secondary"} className="px-5 rounded-sm bg-green-400 text-white">{Status}</Badge>
+                if (Status === "Quotation sent" && "Quotation Sent") {
+                    return <p className=" font-medium  text-green-600 ">{Status}</p>
 
                 }
             }
@@ -267,43 +294,80 @@ export function LeadsTable() {
             cell: ({ row }) => {
                 const lead = row.original;
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant={"outline"}>
-                                <MoreHorizontal />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="border transition-all border-gray-300">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                            >
-                                <CopyIcon />
-                                copy SrNo
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}
-                            >
-                                <ViewLeads lead={lead} />
+                    <>
 
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}
-                            >
-                                <EditLead leads={lead} onSuccess={handleRfresh} />
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}
-                            >
-                                <Delete className="text-red-600" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                        <div className="flex gap-3">
+
+
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant={"outline"} size={"sm"} className=" rounded-sm ">
+                                        <MoreHorizontal />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="border transition-all border-gray-300 w-[150px]">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={() => navigator.clipboard.writeText(lead.primary_person_email ? lead.primary_person_email : "not available")}
+                                    >
+                                        <Copy /> Copy Emial ID
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}
+                                    >
+                                        <ViewLeads lead={lead} />
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}
+                                    >
+                                        <EditLead leads={lead} onSuccess={handleRfresh} />
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+
+                                        <Delete />
+                                        Delete Lead
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            {
+                                lead.status === "Quotation sent" ?
+                                    (
+                                        <AlertDialog open={open}>
+                                            <AlertDialogTrigger asChild>
+                                                <Button onClick={() => setOpen(true)} className="bg-blue-500 hover:bg-blue-600" size={"sm"}>
+                                                    <Handshake className="" /> done
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent className="border border-gray-300">
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Convert to deal</AlertDialogTitle>
+                                                    <AlertDialogDescription>  This will  convert your
+                                                        lead  into deal and remove from the existing lead table, onece you convert lead into deal then it will redirected to the deal table</AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel onClick={() => setOpen(false)}>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleConverDeal(lead)}>
+                                                        {
+                                                            loader ? (<Spinner />) : "Convert"
+                                                        }
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    ) : (
+                                        <Button variant={"outline"} disabled size={"sm"}>
+                                            <Handshake className="" />--
+                                        </Button>
+                                    )
+                            }
+                        </div>
+                    </>
                 )
             }
         }
 
-
-
     ]
+
 
 
     const table = useReactTable({
@@ -327,7 +391,6 @@ export function LeadsTable() {
 
     const handleGetData = async () => {
         const resp = await getLeadsHandler();
-
         if (resp.data.success) {
             setData(resp.data.data);
             setLoader(false);
@@ -339,19 +402,30 @@ export function LeadsTable() {
         }
     }
 
+    const handleConverDeal = async (lead: Lead) => {
+        setLoader(true);
+        const resp = await convertDeal(lead);
+        if (resp?.data.success) {
+            setLoader(false)
+            setOpen(false)
+            toast.success("New Deal Created Successfully.....")
+            navigate("/business");
+        }
+    }
     React.useEffect(() => {
         setLoader(true);
         handleGetData();
-    }, [])
+    }, [refreshKey])
 
     return (
         <div className="w-full">
+            <Toaster position="top-center" />
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+                    value={(table.getColumn("primary_person_email")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
+                        table.getColumn("primary_person_email")?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />
@@ -383,8 +457,8 @@ export function LeadsTable() {
                 </DropdownMenu>
             </div>
             {/* table */}
-            <div className="overflow-hidden rounded-md border border-gray-300 ">
-                <Table className="scrollbar-width-sm">
+            <div className="overflow-hidden rounded-md border border-gray-300 overflow-x-auto custom-scrollbar">
+                <Table className="">
                     <TableHeader className=" h-14">
                         {
                             table.getHeaderGroups().map((headerGroup) => (
@@ -404,7 +478,7 @@ export function LeadsTable() {
                                 </TableRow>
                             ))}
                     </TableHeader>
-                    <TableBody className="scrollbar-width-sm ">
+                    <TableBody >
 
                         {
                             loader ? (
@@ -421,7 +495,7 @@ export function LeadsTable() {
 
                                 table.getRowModel().rows?.length ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow
+                                        row.getValue('status') != "Deal done" ? <TableRow
                                             key={row.id}
                                             data-state={row.getIsSelected() && "selected"}
                                             className="border-b border-b-gray-300 border-r border-r-gray-300 h-14"
@@ -434,7 +508,7 @@ export function LeadsTable() {
                                                     )}
                                                 </TableCell>
                                             ))}
-                                        </TableRow>
+                                        </TableRow> : ""
                                     ))
                                 ) : (
                                     <TableRow>

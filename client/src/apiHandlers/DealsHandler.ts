@@ -1,27 +1,10 @@
 import axios from "axios";
-// import type { Lead } from "../lib/types";
-
-
-
-
+import type { Deal } from "../lib/types";
 
 const URI = import.meta.env.VITE_REACT_BACKEND_URI;
 
-// async function addLeadHandler(formdata: Partial<Lead>) {
 
-//     const reaponse = await axios.post(`${URI}/api/addlead`, formdata,
-//         {
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Accept': 'application/json',
-//             }
-//         }
-//     );
-//     return reaponse;
-// }
-
-
-export async function getDealsHandler() {
+async function getDealsHandler() {
 
     const reaponse = await axios.get(`${URI}/api/getdeals`, {
         headers: {
@@ -33,21 +16,18 @@ export async function getDealsHandler() {
 
 }
 
-// async function updateLeadHandler(formdata: Partial<Lead>) {
+async function addDealHandler(fomdata: Partial<Deal>) {
 
-//     const srNo = formdata.sr_no;
+    const reaponse = await axios.post(`${URI}/api/createdeal`, fomdata, {
+        headers: {
+            'Content-Type': 'applicaion/json',
+            'Accept': 'application/json'
+        }
+    });
+    return reaponse;
 
-//     const reaponse = await axios.put(`${URI}/api/updatelead/${srNo}`, formdata, {
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'Accept': 'application/json',
-//         }
-//     })
-
-//     return reaponse;
-
-// }
+}
 
 
 
-// export { getDealsHandler}
+export { getDealsHandler, addDealHandler }

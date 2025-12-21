@@ -6,18 +6,27 @@ import type { Lead } from "../lib/types";
 
 
 const URI = import.meta.env.VITE_REACT_BACKEND_URI;
-
 async function addLeadHandler(formdata: Partial<Lead>) {
 
-    const reaponse = await axios.post(`${URI}/api/addlead`, formdata,
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
+    try {
+        const resp = await axios.post(
+            `${URI}/api/addlead`,
+            formdata,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                }
             }
+        );
+        return resp;
+
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            return error.response;
         }
-    );
-    return reaponse;
+        throw error;
+    }
 }
 
 
@@ -48,6 +57,26 @@ async function updateLeadHandler(formdata: Partial<Lead>) {
 
 }
 
+async function convertDeal(lead: Lead) {
+    const sr_no = lead.sr_no
+    try {
+        const response = await axios.post(`${URI}/api/createdeal/${sr_no}`, {
+            headers: {
+                'Content-Type': 'Application/jsonm',
+                'Accept': 'Application/jsonm'
+            }
+        });
+        if (response) {
+            return response;
+
+        }
+
+    } catch (error) {
+        console.log(error);
+
+    }
 
 
-export { getLeadsHandler, addLeadHandler, updateLeadHandler }
+}
+
+export { getLeadsHandler, addLeadHandler, updateLeadHandler, convertDeal }

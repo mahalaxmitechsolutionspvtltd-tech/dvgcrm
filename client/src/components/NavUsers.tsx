@@ -29,6 +29,9 @@ import {
   useSidebar,
 } from "./ui/sidebar"
 import { useAuth } from "../auth/AuthProvider"
+import { Link } from "react-router-dom"
+import { Button } from "./ui/button"
+import { Settings } from "lucide-react"
 
 export function NavUser() {
 
@@ -84,11 +87,16 @@ export function NavUser() {
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
-             
+
               <DropdownMenuItem>
                 <IconNotification />
                 Notifications
               </DropdownMenuItem>
+              <Link to={'/settings'}>
+                <DropdownMenuItem >
+                  <Settings /><span className="hidden lg:block xl:block">Settings</span>
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>

@@ -13,10 +13,10 @@ import {
     type SortingState,
     type VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, ChevronDown, Mail, MoreHorizontal, Phone } from "lucide-react"
 
-import { Button } from "../ui/button"
-import { Checkbox } from "../ui/checkbox"
+import { Button } from "../../components/ui/button"
+
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -25,8 +25,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
-import { Input } from "../ui/input"
+} from "../../components/ui/dropdown-menu"
+import { Input } from "../../components/ui/input"
 import {
     Table,
     TableBody,
@@ -34,192 +34,71 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "../ui/table"
-import { getDealsHandler } from "../../apiHandlers/DealsHandler"
+} from "../../components/ui/table"
+import type { Netwoks } from "../../lib/types"
+import { getNetworks } from "../../apiHandlers/NetworkHandler"
 import { useEffect } from "react"
-import { type Deal } from "../../lib/types"
-import { formateDate } from "../../lib/formateDate"
-import { Badge } from "../ui/badge"
 
 
 
+interface childProps {
+    refreshKey: boolean;
+}
 
-export function DealsTable() {
+export function NetworkTable({ refreshKey }: childProps) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-    const [data, setDeals] = React.useState<Deal[]>([]);
+    const [data, setData] = React.useState<Netwoks[]>(() => [...[]])
+    // const [success, setSuccess] = React.useState(false);
 
-    const columns: ColumnDef<Deal>[] = [
+    const columns: ColumnDef<Netwoks>[] = [
         {
-            id: "select",
-            header: ({ table }) => (
-                <Checkbox
-                    className="rounded-sm border"
-                    checked={
-
-                        table.getIsAllPageRowsSelected() ||
-                        (table.getIsSomePageRowsSelected() && "indeterminate")
-                    }
-                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="Select all"
-                />
-            ),
-            cell: ({ row }) => (
-                <Checkbox
-                    className="rounded-sm border"
-                    checked={row.getIsSelected()}
-                    onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="Select row"
-                />
-            ),
-            enableSorting: false,
-            enableHiding: false,
-        },
-        // {
-        //     id: 'lead_sr_no',
-        //     accessorKey: "lead_sr_no",
-        //     header: "Deal id",
-        //     enableHiding: true,
-            
-        //     cell: ({ row }) => (
-        //         <div className="capitalize">{row.getValue("lead_sr_no")}</div>
-        //     ),
-        // },
-        {
-            accessorKey: "created_at",
+            accessorKey: "full_name",
             header: ({ column }) => {
-
                 return (
                     <Button
                         variant="ghost"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
-                        Date
+                        Full Name
                         <ArrowUpDown />
                     </Button>
                 )
             },
-            cell: ({ row }) => {
-                return <div className="lowercase">{formateDate(row.getValue("created_at"))}</div>
-            },
-        },
-        {
-            accessorKey: "company_name",
-            header: "Company Name",
-            cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("company_name")}</div>
-            ),
-        },
-        {
-            accessorKey: "contact_name",
-            header: "Contact Name",
-            cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("contact_name")}</div>
-            ),
+            cell: ({ row }) => <div className="lowercase">{row.getValue("full_name")}</div>,
         },
         {
             accessorKey: "email",
             header: "Email",
-            cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("email")}</div>
-            ),
+            cell: ({ row }) => <div className="lowercase flex gap-1.5"><Mail size={14} className="my-auto" /> {row.getValue("email")}</div>,
         },
         {
-            accessorKey: "city",
-            header: "Location",
-            cell: ({ row }) => (
-                <div className="capitalize">{row.getValue("city")}</div>
-            ),
-        },
-        {
-            accessorKey: "status",
-            header: "Status",
-            cell: ({ row }) => {
-                const Status = row.getValue("status");
-
-                switch (Status) {
-                    case "New":
-                        return <Badge variant={"secondary"} className="px-5  bg-blue-400 text-white">{Status}</Badge>
-                        break;
-                    case "Repeat":
-                        return <Badge variant={"secondary"} className="px-5  bg-blue-900 text-white">{Status}</Badge>
-                        break;
-                    case "In Progress":
-                        return <Badge variant={"secondary"} className="px-5  bg-yellow-400 text-white">{Status}</Badge>
-                        break;
-                    case "Won":
-                        return <Badge variant={"secondary"} className="px-5  bg-green-500 text-white">{Status}</Badge>
-                        break;
-                    case "Lost":
-                        return <Badge variant={"secondary"} className="px-5  bg-red-400 text-white">{Status}</Badge>
-                        break;
-
-                    default:
-                        break;
-                }
-            },
-        },
-        {
-            accessorKey: "deal_stage",
-            header: "Stage",
-            cell: ({ row }) => {
-                const Status = row.getValue("deal_stage");
-
-                switch (Status) {
-                    case "Discovery":
-                        return <Badge variant={"secondary"} className="px-5  bg-blue-400 text-white">{Status}</Badge>
-                        break;
-                    case "Qualification":
-                        return <Badge variant={"secondary"} className="px-5  bg-blue-900 text-white">{Status}</Badge>
-                        break;
-                    case "Proposal":
-                        return <Badge variant={"secondary"} className="px-5  bg-yellow-400 text-white">{Status}</Badge>
-                        break;
-                    case "Negotiation":
-                        return <Badge variant={"secondary"} className="px-5  bg-green-500 text-white">{Status}</Badge>
-                        break;
-                    case "Closed Won":
-                        return <Badge variant={"secondary"} className="px-5  bg-red-400 text-white">{Status}</Badge>
-                        break;
-                    case "Closed Lost":
-                        return <Badge variant={"secondary"} className="px-5  bg-red-400 text-white">{Status}</Badge>
-                        break;
-
-                    default:
-                        break;
-                }
-            },
-        },
-        {
-            accessorKey: "quotation_type",
-            header: "Deal Type",
-            cell: ({ row }) => (
-                <div className="capitalize text-orange-700">{row.getValue("quotation_type")}</div>
-            ),
+            accessorKey: "mobile",
+            header: "Mobile number",
+            cell: ({ row }) => <div className="lowercase flex gap-1.5">
+                <Phone size={14} className="my-auto" />
+                {row.getValue("mobile")}
+            </div>,
         },
 
         {
-            accessorKey: "deal_amount",
-            header: () => <div className="text-right">Amount</div>,
-            cell: ({ row }) => {
-                const amount = parseFloat(row.getValue("deal_amount"))
+            accessorKey: "type_of_connect",
+            header: "Type Of connect",
+            cell: ({ row }) => <div className="lowercase">{row.getValue("type_of_connect")}</div>,
+        },
 
-                // Format the amount as a dollar amount
-                const formatted = new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: "INR",
-                }).format(amount)
-
-                return <div className="text-right font-medium text-blue-500">{formatted}</div>
-            },
+        {
+            accessorKey: "industry_connects",
+            header: "Remark",
+            cell: ({ row }) => <div className="lowercase">{row.getValue("industry_connects")}</div>,
         },
         {
             id: "actions",
             enableHiding: false,
             cell: ({ row }) => {
-                // const payment = row.original
+                const network = row.original
 
                 return (
                     <DropdownMenu>
@@ -232,18 +111,19 @@ export function DealsTable() {
                         <DropdownMenuContent align="end" className="border border-gray-300">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem
-                            // onClick={() => navigator.clipboard.writeText(payment.id)}
+                                onClick={() => navigator.clipboard.writeText(network.email ? network.email : "not available")}
                             >
-                                Copy Serial number
+                                Copy Emial ID
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>View deal</DropdownMenuItem>
-
+                            <DropdownMenuItem>View customer</DropdownMenuItem>
+                            <DropdownMenuItem>Call</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )
             },
-        }]
+        },
+    ];
 
     const table = useReactTable({
         data,
@@ -264,30 +144,32 @@ export function DealsTable() {
         },
     })
 
-    const handleGetallDeals = async () => {
-        const resp = await getDealsHandler();
-        if (resp.data.success) {
-            setDeals(resp.data.data)
+    const handleGetData = async () => {
+        try {
+            const resp = await getNetworks();
+            console.log(resp.data);
+            setData(resp.data.data);
+        } catch (err) {
+            console.error("API failed:", err);
         }
-    }
-    // console.log("actual deals", data);
+    };
+
+
     useEffect(() => {
-        handleGetallDeals();
-    }, [])
+        handleGetData();
+    }, [refreshKey]);
 
     return (
         <div className="w-full">
-            {/* table header */}
+
             <div className="flex items-center py-4">
                 <Input
                     placeholder="Filter emails..."
                     value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
                     onChange={(event) => {
-
-                        table.getColumn("email")?.setFilterValue(event.target.value),
-                            table.getColumn("company_name")?.setFilterValue(event.target.value),
-                            table.getColumn("lead_sr_id")?.setFilterValue(event.target.value),
-                            table.getColumn("status")?.setFilterValue(event.target.value)
+                        table.getColumn("email")?.setFilterValue(event.target.value);
+                        table.getColumn("full_name")?.setFilterValue(event.target.value);
+                        table.getColumn("mobile")?.setFilterValue(event.target.value);
                     }}
                     className="max-w-sm"
                 />
@@ -297,7 +179,7 @@ export function DealsTable() {
                             Columns <ChevronDown />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="border border-gray-300">
+                    <DropdownMenuContent align="end">
                         {table
                             .getAllColumns()
                             .filter((column) => column.getCanHide())
@@ -318,16 +200,19 @@ export function DealsTable() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <div className=" overflow-hidden rounded-md border border-gray-300">
-                <Table >
-                    <TableHeader className="border-b ">
+            <div className="overflow-hidden rounded-md border border-gray-300">
+                <Table>
+                    <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}
+                            <TableRow
+                                key={headerGroup.id}
                                 className="border-b border-b-gray-300"
                             >
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id}
+                                            className="border-none"
+                                        >
                                             {header.isPlaceholder
                                                 ? null
                                                 : flexRender(
@@ -349,10 +234,7 @@ export function DealsTable() {
                                     className="border-b border-b-gray-300"
                                 >
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}
-
-                                        >
-
+                                        <TableCell key={cell.id}>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()

@@ -19,7 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar"
-import { Building2, Contact, FileText, Handshake, Mail, Network, Settings } from "lucide-react"
+import { Handshake } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 
@@ -42,32 +42,6 @@ const data = {
       url: "/business",
       icon: Handshake,
     },
-  
-    {
-      title: "Contacts",
-      url: "/contacts",
-      icon: Contact,
-    },
-    {
-      title: "Emails",
-      url: "/emails",
-      icon: Mail,
-    },
-    {
-      title: "Companies",
-      url: "/companies",
-      icon: Building2,
-    },
-    // {
-    //   title: "Reports",
-    //   url: "/reports",
-    //   icon: FileText,
-    // },
-    // {
-    //   title: "Settings",
-    //   url: "/settings",
-    //   icon: Settings,
-    // },
 
   ],
 

@@ -12,11 +12,22 @@ class Lead extends Model
         "company_name",
         "company_type",
         "nature_of_business",
-        "contact1_name",
-        "contact2_name",
-        "contact3_name",
+
+        "primary_person_name",     //this is required
+        "primary_person_contact",     //this is required
+        "primary_person_email",      //this is required
+
+        "secondary_person_name",
+        "secondary_person_contact",
+        "secondary_person_email",
+
+        "tertiary_person_name",
+        "tertiary_person_contact",
+        "tertiary_person_email",
+        
         "email",
         "gst_no",
+        "pan_number",
         "address_line1",
         "service_requirements",
         "problem_statement",
@@ -24,6 +35,8 @@ class Lead extends Model
         "quotation_type",
         "remarks",
         "follow_ups",
+        "expenses",
+
         "status",
         "date",
     ];

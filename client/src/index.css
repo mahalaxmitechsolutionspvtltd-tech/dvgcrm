@@ -126,10 +126,28 @@
 body {
   font-family: "poppins", sans-serif;
 }
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.scrollbar-width-sm {
-  -ms-overflow-style: none;  /* IE + Edge */
-  scrollbar-width: 10px;     /* Firefox */
+
+/* ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+} */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 2px;   /* vertical */
+  height: 2px;  /* horizontal */
+}
+
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #4f4f4f;
+  /* slate-300 */
+  border-radius: 12px;
 }

@@ -51,7 +51,8 @@ export type LeadStatus =
     | 'Cold'
     | 'Warm'
     | 'Hot'
-    | 'Quotation Sent';
+    | 'Quotation sent'
+    | 'Deal done';
 
 export type QuotationType =
     | 'onetime'
@@ -63,51 +64,72 @@ export interface FollowUp {
     note: string;
     completed: boolean;
     timestamp: number;
+    expenses: string | null
 }
 
 
 export interface Lead {
 
-    contactPerson1: any;
     sr_no: string | null;
     date: string | null;
     company_name: string | null;
     company_type: string | null;
     nature_of_business: string | null;
     gst_no?: string | null;
+    pan_number?: string | null;
+    primary_person_name: string | null;         //this is required
+    primary_person_contact: string | null;      //this is required
+    primary_person_email: string | null;        //this is required
 
-    // Contacts
-    contact1_name: string | null;
-    contact2_name?: string | null;
-    contact3_name?: string | null;
-    email: string | null;
+    secondary_person_name: string | null;
+    secondary_person_contact: string | null;
+    secondary_person_email: string | null;
 
-
+    tertiary_person_name: string | null;
+    tertiary_person_contact: string | null;
+    tertiary_person_email: string | null;
     address_line1: string | null;
     city: string | null;
-
-
     problem_statement?: string | null;
     service_requirements: string[] | null;
     remarks?: string | null;
     status: LeadStatus;
     quotation_amount?: number | null;
     quotation_type?: QuotationType;
-
     follow_ups: FollowUp[] | null;
+    expenses: string | null;
     last_updated: number | null;
 }
 
-export type TypeoFonnect = 'HVT' | 'HII' | 'BA';
-export interface IndustryConnects {
-    name: string | null
+export interface Deal {
+    lead_sr_no: string | null;
+    company_name: string | null;
+    company_type: string | null;
+    nature_of_business: string | null;
+    contact_name: string | null;
+    contact_number: string | null;
+    pan_number?: string | null;
+    gst_no?: string | null;
+    email: string | null;
+    city: string | null;
+    deal_title: string | null;
+    deal_stage: string | null;
+    deal_amount: string | null;
+    quotation_type: string | null;
+    problem_statement: string | null;
+    service_requirements: string[] | null;
+    status: string | null;
+    last_updated: string | null;
+    created_at: number | null;
+    updated_at: number | null;
 }
 
 
+
 export interface Netwoks {
-    name: string | null,
+    full_name: string | null,
     email: string | null,
-    contact: string | null,
-    type_of_connect: TypeoFonnect,
-    industry_connects: IndustryConnects[] | null
+    mobile: string | null,
+    type_of_connect: string | null
+    industry_connects: string | null
 }

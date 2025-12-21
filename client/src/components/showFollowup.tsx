@@ -21,8 +21,9 @@ export default function ShowFollowup({ lead }: childProps) {
     const STATUS_COLOR = {
         Warm: "bg-amber-500",
         Hot: "bg-red-500",
-        "Quotation Sent": "bg-green-500",
-        Cold: "bg-blue-500"
+        "Quotation sent": "bg-green-500",
+        Cold: "bg-blue-500",
+        "Deal done": "bg-purple-500"
     };
 
 
@@ -31,11 +32,11 @@ export default function ShowFollowup({ lead }: childProps) {
             <div>
                 <Dialog>
                     <DialogTrigger asChild >
-                        <Button variant={"outline"}>
+                        <Button variant={"outline"} className="h-7 rounded-sm ">
                             <Eye />Show
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className=" border border-gray-300 lg:max-w-4xl">
+                    <DialogContent className=" border border-gray-300 lg:max-w-2xl max-h-[90vh] overflow-y-auto">
                         <div className=" flex justify-between">
                             <DialogHeader>
                                 <DialogTitle>{lead.company_name}
@@ -58,13 +59,13 @@ export default function ShowFollowup({ lead }: childProps) {
                             <DialogHeader>
                                 <DialogTitle className="text-md text-gray-600">Follow up's</DialogTitle>
                             </DialogHeader>
-                            <div className=" overflow-x-auto">
-                                <Table className="w-full border border-gray-50">
+                            <div className=" overflow-x-auto border border-gray-200 rounded-md">
+                                <Table className="w-full ">
                                     <TableHeader>
                                         <TableRow className=" border-b border-b-gray-200 rounded-md">
                                             <TableHead>Date</TableHead>
-                                            <TableHead>Time</TableHead>
                                             <TableHead>Note</TableHead>
+                                            <TableHead>Expenses</TableHead>
 
                                         </TableRow>
                                     </TableHeader>
@@ -74,8 +75,8 @@ export default function ShowFollowup({ lead }: childProps) {
                                                 lead.follow_ups?.map((item, index) => (
                                                     <TableRow key={index} className=" border-0">
                                                         <TableCell>{formateDate(item.date)}</TableCell>
-                                                        <TableCell>{new Date(item.timestamp).toLocaleTimeString()}</TableCell>
                                                         <TableCell>{item.note}</TableCell>
+                                                        <TableCell>{item.expenses}</TableCell>
 
                                                     </TableRow>
                                                 ))

@@ -43,11 +43,6 @@ export function SiteHeader({ currentPath, }: { currentPath: ReactNode }) {
                 <Network /><span className="hidden lg:block xl:block">Network</span>
               </Button>
             </Link>
-            <Link to={'/settings'}>
-              <Button variant={"outline"}>
-                <Settings /><span className="hidden lg:block xl:block">Settings</span>
-              </Button>
-            </Link>
             <Link to={"/reports"}>
               <Button variant={"outline"}>
                 <FileChartColumn />

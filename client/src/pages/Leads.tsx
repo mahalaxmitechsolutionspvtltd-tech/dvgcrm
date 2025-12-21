@@ -4,20 +4,19 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbS
 import { Separator } from "../components/ui/separator";
 import { LeadsTable } from "../components/leads/LeadsTable";
 import AddLeads from "../components/leads/AddLeads";
-// import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Toaster, toast } from 'sonner'
-export default function Leads() {
 
-    // const [success, setSuccess] = useState<boolean>(true);
+export default function Leads() {
+    const [refreshKey, setRefreshKey] = useState(false);
 
     const currentPath = useLocation();
     const path = currentPath.pathname.slice(1);
 
 
     const handleSuccess = (isSuccess: boolean) => {
-        console.log(isSuccess);
-
         if (isSuccess) {
+            setRefreshKey((prev: any) => !prev);
             toast.success("Lead added successfully...")
         }
     }
@@ -51,7 +50,7 @@ export default function Leads() {
                 </div>
                 <Separator className="mt-5" />
                 <div>
-                    <LeadsTable />
+                    <LeadsTable refreshKey={refreshKey} />
                 </div>
 
             </div >

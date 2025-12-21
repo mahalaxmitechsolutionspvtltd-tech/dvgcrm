@@ -20,13 +20,6 @@ interface childProps {
 
 export default function ViewLeads({ lead }: childProps) {
 
-    const STATUS_COLOR = {
-        Warm: "bg-amber-500",
-        Hot: "bg-red-500",
-        "Quotation Sent": "bg-green-500",
-        Cold: "bg-blue-500"
-    };
-
     return (
         <>
             <div>
@@ -53,7 +46,7 @@ export default function ViewLeads({ lead }: childProps) {
                                         <DialogDescription className="text-sm font-medium">Applied on: {lead.date}</DialogDescription>
                                     </div>
                                     <div>
-                                        <Badge className={`${STATUS_COLOR[lead.status] || "bg-blue-500"} rounded-sm`}>
+                                        <Badge className={` rounded-sm`}>
                                             {lead.status}
                                         </Badge>
                                     </div>
@@ -78,7 +71,7 @@ export default function ViewLeads({ lead }: childProps) {
                                 <section className="col-span-1 flex flex-col gap-4">
                                     <div>
                                         <label className="text-gray-600">Email</label>
-                                        <span className=" block">{lead.email}</span>
+                                        <span className=" block">{lead.primary_person_email}</span>
                                     </div>
                                     <div>
                                         <label className="text-gray-600">Remarks </label>
