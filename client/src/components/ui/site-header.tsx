@@ -3,7 +3,7 @@ import { Button } from "./button"
 import { Separator } from "./separator"
 import { SidebarTrigger } from "./sidebar"
 
-import { Bell, FileChartColumn, Network, Settings } from "lucide-react"
+import { Bell, FileChartColumn, Network } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "./dropdown-menu"
 
 import { Link } from "react-router-dom"

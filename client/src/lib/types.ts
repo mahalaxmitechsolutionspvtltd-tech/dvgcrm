@@ -66,7 +66,7 @@ export interface FollowUp {
     note: string;
     completed: boolean;
     timestamp: number;
-    expenses: string | null
+    expenses: string | null;
 }
 
 

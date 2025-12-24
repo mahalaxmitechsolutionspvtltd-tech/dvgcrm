@@ -23,6 +23,7 @@ export default function ShowFollowup({ lead }: childProps) {
         Hot: "bg-red-500",
         "Quotation sent": "bg-green-500",
         Cold: "bg-blue-500",
+        'Lead dropped': "bg-red-500",
         "Deal done": "bg-purple-500"
     };
 

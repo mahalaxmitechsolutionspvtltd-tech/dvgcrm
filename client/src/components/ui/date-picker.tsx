@@ -23,10 +23,11 @@ type CalenderProps = {
     wrapperClassName?: string
 }
 
-export function DatePicker({ label = "Select date", value, onChange, onClick, className, wrapperClassName }: CalenderProps) {
+export function DatePicker({  value,  onClick, wrapperClassName }: CalenderProps) {
     const [open, setOpen] = React.useState(false)
     const [date, setDate] = React.useState<Date | undefined>(undefined)
-
+    
+    
     return (
         <div className={cn("flex flex-col gap-2", wrapperClassName)}>
             < Popover open={open} onOpenChange={setOpen} >

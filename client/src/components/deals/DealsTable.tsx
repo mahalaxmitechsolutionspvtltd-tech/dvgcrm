@@ -84,26 +84,6 @@ export function DealsTable({ refreshKey }: childProps) {
 
 
 
-    const DEAL_STAGE_STYLES: Record<DealStage, string> = {
-        Discovery:
-            "bg-blue-600/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400",
-
-        Qualification:
-            "bg-purple-600/10 text-purple-600 dark:bg-purple-400/10 dark:text-purple-400",
-
-        Proposal:
-            "bg-amber-600/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400",
-
-        Negotiation:
-            "bg-orange-600/10 text-orange-600 dark:bg-orange-400/10 dark:text-orange-400",
-
-        "Closed Won":
-            "bg-green-600/10 text-green-600 dark:bg-green-400/10 dark:text-green-400",
-
-        "Closed Lost":
-            "bg-red-600/10 text-red-600 dark:bg-red-400/10 dark:text-red-400",
-    };
-
     const columns: ColumnDef<Deal>[] = [
         {
             id: "select",

@@ -7,7 +7,7 @@ import { MultiSelect, MultiSelectContent, MultiSelectGroup, MultiSelectItem, Mul
 import { Textarea } from "../ui/textarea";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useState, type ChangeEventHandler } from "react";
-import type { Deal, Lead } from "../../lib/types";
+import type { Deal} from "../../lib/types";
 
 
 import { FieldLabel } from "../ui/field";

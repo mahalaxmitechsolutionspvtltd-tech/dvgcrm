@@ -16,7 +16,7 @@ import {
     useReactTable,
     type VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Copy, Delete, Eye, Handshake, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, ChevronDown, Copy,Eye, Handshake, MoreHorizontal } from "lucide-react"
 
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
