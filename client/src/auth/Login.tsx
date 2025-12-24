@@ -144,7 +144,7 @@ export function Login({
                             </form>
                             <div className="bg-muted relative hidden md:block">
                                 <img
-                                    src="./src/assets/images/bwink_bld_03_single_03.jpg"
+                                    src="/images/bwink_bld_03_single_03.jpg"
                                     alt="Image"
                                     className="absolute inset-0 h-full w-full object-cover "
                                 />
