@@ -17,6 +17,7 @@ class UserAuthController extends Controller
     function signUp(Request $request)
     {
 
+$input = $request->only(['full_name','email','password','mobile_no']);
 
 
         try {
@@ -29,7 +30,7 @@ class UserAuthController extends Controller
             ];
 
 
-            $validation = validator($request->all(), $rules);
+            $validation = validator($input, $rules);
 
 
             if ($validation->fails()) {
@@ -37,7 +38,7 @@ class UserAuthController extends Controller
             } else {
 
 
-                $input = $request->all();
+                
 
                 $input["password"] = bcrypt($input["password"]);
                 $user = User::create($input);
