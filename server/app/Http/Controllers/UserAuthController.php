@@ -43,15 +43,15 @@ class UserAuthController extends Controller
                 $user = User::create($input);
 
                 if ($user) {
-                    return ApiResponse::success($user, "User registerd successfully..", 200, );
+                    return ApiResponse::success(true, $user, "User registerd successfully..", 200);
 
                 } else {
-                    return ApiResponse::error($user, false, 400, );
+                    return ApiResponse::error($user, 400, null );
                 }
 
             }
         } catch (\Throwable $th) {
-            return ApiResponse::error($th, "someting went wrong", 500, );
+            return ApiResponse::error("someting went wrong", 500, $th );
         }
 
     }
