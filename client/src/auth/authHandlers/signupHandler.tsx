@@ -19,7 +19,7 @@ export default async function signupHandler(formdata: FormData, setLoding: Dispa
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                withCredentials: true
+                withCredentials: false
             }
         );
 
